@@ -23,6 +23,9 @@ app.get("/user/check", stylistAuth);
 app.get("/", (req, res) => {
   res.send("hello from server");
 });
+app.get("/stylistauth", stylistAuth, (req, res) => {
+  res.json({ message: "login hai" });
+});
 
 const Port = process.env.Port || 8000;
 console.log(new Date("2023-07-30T00:00:00.000Z"));
