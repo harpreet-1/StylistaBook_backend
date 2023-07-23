@@ -72,7 +72,15 @@ apoointmentRouter.get("/today/stylist", async (req, res) => {
     const appointments = await AppointmentModel.find({
       stylistId,
       status: { $in: ["pending", "cancelled", "rejected"] },
-      date: { $regex: `^${currentDate}` },
+      date: {
+        $expr: {
+          $and: [
+            { $eq: [{ $year: "$date" }, { $year: currentDate }] },
+            { $eq: [{ $month: "$date" }, { $month: currentDate }] },
+            { $eq: [{ $dayOfMonth: "$date" }, { $dayOfMonth: currentDate }] },
+          ],
+        },
+      },
     })
       .sort({
         date: 1,
