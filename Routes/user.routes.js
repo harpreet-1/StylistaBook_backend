@@ -1,6 +1,6 @@
 const express = require("express");
 const userrouter = express.Router();
-const { UserInfo } = require("../Models/user.model")
+const { UserInfo } = require("../Models/user.model");
 
 const mongoose = require("mongoose");
 userrouter.use(express.json());
@@ -14,12 +14,12 @@ const { googleAuthentication } = require("../Controllers/user.controller");
 
 // const { passport } = require("../Config/google-oauth")
 
-const JWT_SECRET = "mahendra";
+const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
 //***registration herte**** */
 userrouter.post("/register", async (req, res) => {
   const { fname, lname, email, password } = req.body;
-  const userType = "customer"
+  const userType = "customer";
 
   const encryptedPassword = await bcrypt.hash(password, 10);
   try {
@@ -45,7 +45,7 @@ userrouter.post("/register", async (req, res) => {
 
 userrouter.post("/login-user", async (req, res) => {
   const { email, password } = req.body;
-  console.log('--->', req.body);
+  console.log("--->", req.body);
 
   try {
     const user = await UserInfo.findOne({ email });
@@ -53,18 +53,26 @@ userrouter.post("/login-user", async (req, res) => {
       return res.json({ error: "User Not found" });
     }
     if (await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign({ email: user.email, stylistId: user._id }, JWT_SECRET, {
-        expiresIn: "15m",
-      });
+      const token = jwt.sign(
+        { email: user.email, stylistId: user._id },
+        JWT_SECRET,
+        {
+          expiresIn: "15m",
+        }
+      );
 
       // if (res.status(201)) {
-      return res.json({ status: "ok", data: token, userID: user._id, userDetails: user });
+      return res.json({
+        status: "ok",
+        data: token,
+        userID: user._id,
+        userDetails: user,
+      });
       // } else {
       // return res.json({ error: "error" });
       // }
     } else {
       return res.json({ status: false, message: "Invalid Password" });
-
     }
   } catch (error) {
     res.json({ status: "error", message: error.message });
@@ -104,10 +112,18 @@ userrouter.post("/reset-password/:id/:token", async (req, res) => {
 
 // ****google auth*******//
 
+userrouter.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
 
-userrouter.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-
-userrouter.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login', session:false }), googleAuthentication )
+userrouter.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/login",
+    session: false,
+  }),
+  googleAuthentication
+);
 
 module.exports = userrouter;
