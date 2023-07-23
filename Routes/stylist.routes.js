@@ -4,8 +4,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const StylistModel = require("../Models/stylist");
-const { BlacklistModel } = require("../Models/Blacklist");
 const stylistAuth = require("../Middlewares/stylistaAuth");
+const { BlacklistModel } = require("../Models/Blacklist");
 
 require("dotenv").config();
 const stylistRouter = express.Router();
