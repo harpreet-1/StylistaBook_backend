@@ -48,47 +48,20 @@ apoointmentRouter.post("/book/user", async (req, res) => {
 
 apoointmentRouter.get("/today/stylist", async (req, res) => {
   try {
-    // Date object
-    const date = new Date();
-
-    let currentDay = String(date.getDate()).padStart(2, "0");
-
-    let currentMonth = String(date.getMonth() + 1).padStart(2, "0");
-
-    let currentYear = date.getFullYear();
-
-    // we will display the date as DD-MM-YYYY
-
-    let currentDate = `${currentDay}-${currentMonth}-${currentYear}`;
-
-    console.log("The current date is " + currentDate);
-
     const stylistId = req.stylistID;
 
-    // const appointments = await AppointmentModel.find({
-    //   stylistId: "648e95f137b1838d156af177",
-    // });
+    const date = new Date();
+    date.setUTCHours(0, 0, 0, 0); // Set the time to midnight (00:00:00) for accurate comparison
 
     const appointments = await AppointmentModel.find({
-      stylistId,
-      status: { $in: ["pending", "cancelled", "rejected"] },
-      date: {
-        $expr: {
-          $and: [
-            { $eq: [{ $year: "$date" }, { $year: currentDate }] },
-            { $eq: [{ $month: "$date" }, { $month: currentDate }] },
-            { $eq: [{ $dayOfMonth: "$date" }, { $dayOfMonth: currentDate }] },
-          ],
-        },
-      },
+      date: { $gte: date },
+      date: { $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000) },
     })
-      .sort({
-        date: 1,
-        time: 1,
-      })
+      .sort({ time: 1 }) // Sort appointments by time in ascending order
       .populate("customerId")
       .populate("serviceId")
-      .populate("stylistId");
+      .populate("stylistId")
+      .exec();
 
     res.status(200).json({ success: true, appointments });
   } catch (error) {
