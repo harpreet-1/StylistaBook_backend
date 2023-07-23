@@ -9,6 +9,7 @@ const userRoutes = require("./Routes/user.routes");
 const stylistRouter = require("./Routes/stylist.routes");
 const serviceRouter = require("./Routes/service.routes");
 const stylistAuth = require("./Middlewares/stylistaAuth");
+const apoointmentRouter = require("./Routes/appointment.routes");
 
 const app = express();
 app.use(express.json());
@@ -17,10 +18,12 @@ app.use("/user", userRoutes);
 app.use("/stylist", stylistRouter);
 app.use("/service", serviceRouter);
 app.use("/service", serviceRouter);
+app.use("/app", apoointmentRouter);
 app.get("/user/check", stylistAuth);
 app.get("/", (req, res) => {
   res.send("hello from server");
 });
+
 const Port = process.env.Port || 8000;
 
 app.listen(Port, async (req, res) => {
