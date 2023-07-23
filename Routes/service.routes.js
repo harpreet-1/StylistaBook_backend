@@ -51,9 +51,9 @@ serviceRouter.post("/add", stylistAuth, async (req, res) => {
 
 // get services for specific stylist----------------------
 
-serviceRouter.get("/my", stylistAuth, async (req, res) => {
+serviceRouter.get("/my/:id", async (req, res) => {
   try {
-    const services = await ServiceModel.find({ stylistId: req.stylistID });
+    const services = await ServiceModel.find({ stylistId: req.params.id });
     res.status(200).json(services);
   } catch (error) {
     console.error(
