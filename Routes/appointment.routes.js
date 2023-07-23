@@ -117,9 +117,13 @@ apoointmentRouter.get("/requests/stylist", async (req, res) => {
 apoointmentRouter.get("/stylist", async (req, res) => {
   try {
     const stylistId = req.stylistID;
+    console.log(
+      "----------------------------i am in app/stylist------------------------------------------",
+      stylistId
+    );
 
     const appointments = await AppointmentModel.find({
-      stylistId,
+      stylistId: stylistId,
       status: { $in: ["completed", "accepted", "expired"] },
     })
       .sort({
@@ -145,8 +149,7 @@ apoointmentRouter.put("/status/:appointmentID", async (req, res) => {
     // Find the appointment by ID and update the status
     const appointment = await AppointmentModel.findByIdAndUpdate(
       appointmentID,
-      { status },
-      { new: true }
+      { status }
     );
 
     if (!appointment) {
