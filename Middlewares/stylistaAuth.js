@@ -1,8 +1,9 @@
 const jwt = require("jsonwebtoken");
 
 const StylistModel = require("../Models/stylist");
-const { BlacklistModel } = require("../Models/Blacklist");
+
 const { UserInfo } = require("../Models/user.model");
+const { BlacklistModel } = require("../Models/Blacklist");
 require("dotenv").config();
 const stylistAuth = async (req, res, next) => {
   try {
