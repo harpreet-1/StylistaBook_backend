@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 
 const StylistModel = require("../Models/stylist");
 const stylistAuth = require("../Middlewares/stylistaAuth");
-const { BlacklistModel } = require("../Models/Blacklist");
+// const { BlacklistModel } = require("../Models/Blacklist");
 
 require("dotenv").config();
 const stylistRouter = express.Router();
@@ -127,14 +127,14 @@ stylistRouter.get("/profile", async (req, res) => {
   }
 });
 
-stylistRouter.post("/logout", async (req, res) => {
-  const { token } = req.body;
+// stylistRouter.post("/logout", async (req, res) => {
+//   const { token } = req.body;
 
-  const newBlacklistedToken = new BlacklistModel({ blacklist: token });
-  await newBlacklistedToken.save();
+//   const newBlacklistedToken = new BlacklistModel({ blacklist: token });
+//   await newBlacklistedToken.save();
 
-  res.json({ message: "Token revoked successfully" });
-});
+//   res.json({ message: "Token revoked successfully" });
+// });
 
 // -----------------------get all stylists ----------------------------
 stylistRouter.get("/allstylist", async (req, res) => {

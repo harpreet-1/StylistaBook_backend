@@ -3,13 +3,14 @@ const jwt = require("jsonwebtoken");
 const StylistModel = require("../Models/stylist");
 
 const { UserInfo } = require("../Models/user.model");
-const { BlacklistModel } = require("../Models/Blacklist");
+// const { BlacklistModel } = require("../Models/Blacklist");
 require("dotenv").config();
 const stylistAuth = async (req, res, next) => {
   try {
     const blacklist = req.headers.authorization.split(" ")[1];
     console.log("token from headers", blacklist);
-    const isblacklisted = await BlacklistModel.findOne({ blacklist });
+    // const isblacklisted = await BlacklistModel.findOne({ blacklist });
+    const isblacklisted = false;
     if (isblacklisted) {
       return res.status(400).json({ message: "Invalid Token" });
     }
