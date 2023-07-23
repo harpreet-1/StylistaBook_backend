@@ -56,6 +56,7 @@ apoointmentRouter.get("/today/stylist", async (req, res) => {
     const appointments = await AppointmentModel.find({
       date: { $gte: date },
       date: { $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000) },
+      status: { $in: ["completed", "accepted", "expired"] },
     })
       .sort({ time: 1 }) // Sort appointments by time in ascending order
       .populate("customerId")
