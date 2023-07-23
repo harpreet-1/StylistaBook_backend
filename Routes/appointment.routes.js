@@ -63,7 +63,7 @@ apoointmentRouter.get("/today/stylist", async (req, res) => {
 
     console.log("The current date is " + currentDate);
 
-    const { stylistId } = req.stylistId;
+    const stylistId = req.stylistID;
 
     // const appointments = await AppointmentModel.find({
     //   stylistId: "648e95f137b1838d156af177",
@@ -90,7 +90,7 @@ apoointmentRouter.get("/today/stylist", async (req, res) => {
 
 apoointmentRouter.get("/requests/stylist", async (req, res) => {
   try {
-    const { stylistId } = req.stylistId;
+    const stylistId = req.stylistID;
 
     // const appointments = await AppointmentModel.find({
     //   stylistId: "648e95f137b1838d156af177",
@@ -116,7 +116,7 @@ apoointmentRouter.get("/requests/stylist", async (req, res) => {
 
 apoointmentRouter.get("/stylist", async (req, res) => {
   try {
-    const { stylistId } = req.stylistId;
+    const stylistId = req.stylistID;
 
     const appointments = await AppointmentModel.find({
       stylistId,
@@ -177,6 +177,81 @@ apoointmentRouter.delete("/:appointmentID", async (req, res) => {
 
     res.status(200).json({ success: true, appointment });
   } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+apoointmentRouter.get("/highlights", async (req, res) => {
+  try {
+    const stylistId = req.stylistID;
+    const totalCount = await AppointmentModel.countDocuments({
+      stylistId,
+      $or: [{ status: "completed" }, { status: "accepted" }],
+    });
+
+    const result1 = await AppointmentModel.aggregate([
+      {
+        $match: {
+          stylistId,
+          status: { $in: ["accepted", "completed"] },
+        },
+      },
+      {
+        $lookup: {
+          from: "Services",
+          localField: "serviceId",
+          foreignField: "_id",
+          as: "service",
+        },
+      },
+      {
+        $unwind: "$service",
+      },
+      {
+        $group: {
+          _id: null,
+          totalEarned: { $sum: "$service.pricing" },
+        },
+      },
+    ]);
+
+    const totalEarned = result1.length > 0 ? result1[0].totalEarned : 0;
+
+    const result = await AppointmentModel.aggregate([
+      {
+        $match: {
+          stylistId: mongoose.Types.ObjectId(stylistId),
+          status: "completed",
+        },
+      },
+      {
+        $group: {
+          _id: "$customerId",
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalCustomers: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const totalCustomers = result.length > 0 ? result[0].totalCustomers : 0;
+    const pendingCount = await AppointmentModel.countDocuments({
+      status: "pending",
+    });
+    res.status(200).json({
+      appointments: totalCount,
+      totalEarned,
+      totalCustomers,
+      pendingCount,
+    });
+  } catch (error) {
+    console.log(
+      "errrorrr from highlights--------------------------------------------------------------------",
+      error
+    );
     res.status(500).json({ success: false, error: error.message });
   }
 });
