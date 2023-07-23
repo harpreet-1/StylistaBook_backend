@@ -170,63 +170,37 @@ apoointmentRouter.delete("/:appointmentID", async (req, res) => {
 apoointmentRouter.get("/highlights", async (req, res) => {
   try {
     const stylistId = req.stylistID;
+    console.log("-------------stylist id---------", stylistId);
     const totalCount = await AppointmentModel.countDocuments({
       stylistId,
       $or: [{ status: "completed" }, { status: "accepted" }],
     });
 
-    const result1 = await AppointmentModel.aggregate([
-      {
-        $match: {
-          stylistId,
-          status: { $in: ["accepted", "completed"] },
-        },
-      },
-      {
-        $lookup: {
-          from: "Services",
-          localField: "serviceId",
-          foreignField: "_id",
-          as: "service",
-        },
-      },
-      {
-        $unwind: "$service",
-      },
-      {
-        $group: {
-          _id: null,
-          totalEarned: { $sum: "$service.pricing" },
-        },
-      },
-    ]);
+    const result1 = await AppointmentModel.find({
+      stylistId: stylistId,
+      status: { $in: ["completed", "accepted"] },
+    })
+      .sort({
+        date: 1,
+        time: 1,
+      })
+      .populate("serviceId", "pricing");
+    let totalEarned = 0;
+    for (let i = 0; i < result1.length; i++) {
+      totalEarned += result1[i].serviceId.pricing;
+    }
+    const appointments = await AppointmentModel.find({ stylistId });
+    const uniqueCustomers = new Set(
+      appointments.map((appointment) => appointment.customerId)
+    );
+    const totalCustomers = uniqueCustomers.size;
 
-    const totalEarned = result1.length > 0 ? result1[0].totalEarned : 0;
+    console.log("Total customers for stylist:", totalCustomers);
 
-    const result = await AppointmentModel.aggregate([
-      {
-        $match: {
-          stylistId: mongoose.Types.ObjectId(stylistId),
-          status: "completed",
-        },
-      },
-      {
-        $group: {
-          _id: "$customerId",
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalCustomers: { $sum: 1 },
-        },
-      },
-    ]);
-
-    const totalCustomers = result.length > 0 ? result[0].totalCustomers : 0;
     const pendingCount = await AppointmentModel.countDocuments({
       status: "pending",
     });
+
     res.status(200).json({
       appointments: totalCount,
       totalEarned,
