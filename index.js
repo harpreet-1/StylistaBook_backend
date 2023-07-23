@@ -18,6 +18,9 @@ app.use("/stylist", stylistRouter);
 app.use("/service", serviceRouter);
 app.use("/service", serviceRouter);
 app.get("/user/check", stylistAuth);
+app.get("/", (req, res) => {
+  res.send("hello from server");
+});
 const Port = process.env.Port || 8000;
 
 app.listen(Port, async (req, res) => {
