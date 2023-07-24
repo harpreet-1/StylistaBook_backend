@@ -1,66 +1,54 @@
-
-require("dotenv").config()
+require("dotenv").config();
 
 const passport = require("passport");
 
 const { UserInfo } = require("../Models/user.model");
 
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
-passport.use(new GoogleStrategy({
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.googleclientid,
+      clientSecret: process.env.googleclientsecret,
+      callbackURL:
+        "https://stylistabookbackend-production.up.railway.app/user/auth/google/callback",
+    },
 
-    clientID: process.env.googleclientid,
-    clientSecret: process.env.googleclientsecret,
-    callbackURL: "http://localhost:8000/user/auth/google/callback"
+    async function (accessToken, refreshToken, profile, cb) {
+      try {
+        let Email = profile._json.email;
 
-  },
+        const user = await UserInfo.findOne({ email: Email });
 
-  async function(accessToken, refreshToken, profile, cb) {
+        //console.log(user)
 
-    try {
+        if (!user) {
+          console.log("adding new user");
 
-      let Email = profile._json.email
+          let newuser = new UserInfo({
+            email: Email,
+            fname: profile._json.name,
+            lname: "-",
+            password: "12345678",
+            userType: "customer",
+          });
 
-      const user = await UserInfo.findOne({email:Email})
+          await newuser.save();
 
-      //console.log(user)
+          return cb(null, newuser);
+        } else {
+          console.log("user is present db");
 
-      if(!user){
-
-        console.log("adding new user")
-
-        let newuser = new UserInfo({
-          email:Email,
-          fname:profile._json.name,
-          lname:"-",
-          password:"12345678",
-          userType:"customer"
-        })
-
-        await newuser.save()
-
-        return cb(null, newuser)
-
+          return cb(null, user);
+        }
+      } catch (error) {
+        console.log(error);
       }
-      
-      else{
 
-        console.log("user is present db")
-
-        return cb(null, user)
-
-      }
-    } 
-    catch (error) {
-
-      console.log(error)
-
+      //console.log(profile)
     }
-    
-    //console.log(profile)
-    
-  }
+  )
+);
 
-));
-
-module.exports = {passport}
+module.exports = { passport };
